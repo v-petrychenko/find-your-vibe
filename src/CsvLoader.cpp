@@ -1,26 +1,27 @@
 
 #include "CsvLoader.h"
+#include <cstddef>
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
+#include <utility>
 
 using namespace std;
 
 namespace {
-const int COL_TRACK_ID = 1;
-const int COL_ARTISTS = 2;
-const int COL_ALBUM = 3;
-const int COL_TRACK_NAME = 4;
-const int COL_POPULARITY = 5;
-const int COL_DURATION = 6;
-const int COL_EXPLICIT = 7;
-const int COL_DANCEABILITY = 8;
-const int COL_ENERGY = 9;
-const int COL_VALENCE = 17;
-const int COL_TEMPO = 18;
-const int COL_GENRE = 20;
-const int COLUMN_COUNT = 21;
+const size_t COL_TRACK_ID = 1;
+const size_t COL_ARTISTS = 2;
+const size_t COL_ALBUM = 3;
+const size_t COL_TRACK_NAME = 4;
+const size_t COL_POPULARITY = 5;
+const size_t COL_DURATION = 6;
+const size_t COL_EXPLICIT = 7;
+const size_t COL_DANCEABILITY = 8;
+const size_t COL_ENERGY = 9;
+const size_t COL_VALENCE = 17;
+const size_t COL_TEMPO = 18;
+const size_t COL_GENRE = 20;
+const size_t COLUMN_COUNT = 21;
 }
 
 //Return the value of a feature
@@ -36,27 +37,24 @@ double featureValue(const Song& song, Feature feature) {
 }
 
 
-std::vector<Song> loadSongs(const std::string& path) {
+vector<Song> loadSongs(const string& path) {
     ifstream file(path);
     if (!file.is_open()) {
         throw runtime_error("Could not open " + path);
     }
 
     vector<Song> songs;
+    songs.reserve(114000);
     string line;
 
     getline(file, line);
-    int skipped = 0;
+    size_t skipped = 0;
 
     while (getline(file, line)) {
         vector<string> fields = splitCsvLine(line);
 
         if (fields.size() != COLUMN_COUNT) { //Check that row has 21 columns
             skipped++;
-        // if (skipped <= 5) {
-        //     cout << fields.size() << "\n";
-        //     cout << line << "\n";
-        // }
             continue;
         }
 
@@ -78,19 +76,20 @@ std::vector<Song> loadSongs(const std::string& path) {
         }
         catch (const exception&) {
             skipped++;
-            // cout << line << "\n";
             continue;
         }
-        songs.push_back(song);
-        // if (songs.size() <= 5) cout << song.trackName << " | " << song.albumName << "\n";
-        // if (line.find("\"\"") != string::npos) cout << line << "\n" << song.trackName << " | " << song.albumName << "\n";
+        songs.push_back(move(song));
     }
     cout << "Loaded " << songs.size() << " songs, skipped " << skipped << " rows\n";
     return songs;
 }
 
+//Split line using commas
+//comas inside double quotes are kept as part of name. 
+//Quotes inside quotes are escaped quotes that we keep
 vector<string> splitCsvLine(const string& line) { 
     vector<string> fields;
+    fields.reserve(COLUMN_COUNT);
     string current;
     bool inQuotes = false;
     for (size_t i = 0; i < line.size(); i++) {
