@@ -77,23 +77,35 @@ std::vector<Song> loadSongs(const std::string& path) {
         }
         catch (const exception&) {
             skipped++;
+            // cout << line << "\n";
             continue;
         }
         songs.push_back(song);
+        // if (songs.size() <= 5) cout << song.trackName << " | " << song.albumName << "\n";
+        // if (line.find("\"\"") != string::npos) cout << line << "\n" << song.trackName << " | " << song.albumName << "\n";
     }
     cout << "Loaded " << songs.size() << " songs, skipped " << skipped << " rows\n";
     return songs;
 }
 
-//Split file using commas
 vector<string> splitCsvLine(const string& line) { 
     vector<string> fields;
-    stringstream ss(line);
-    string field;
-
-    while (getline(ss, field, ',')) {
-        fields.push_back(field);
+    string current;
+    bool inQuotes = false;
+    for (int i = 0; i < line.size(); i++) {
+        char c = line[i];
+        if (c == '"') {
+            inQuotes = !inQuotes;
+        }
+        else if (c == ',' && !inQuotes) {
+            fields.push_back(current);
+            current.clear();
+        }
+        else {
+            current += c;
+        }
     }
 
+    fields.push_back(current);
     return fields;
 }
