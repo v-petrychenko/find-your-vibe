@@ -1,8 +1,10 @@
 #include "CsvLoader.h"
-
 #include <fstream>
-#include <stdexcept>
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
+
+using namespace std;
 
 namespace {
 const int COL_TRACK_ID = 1;
@@ -34,9 +36,58 @@ double featureValue(const Song& song, Feature feature) {
 
 
 std::vector<Song> loadSongs(const std::string& path) {
-    return {};
+    ifstream file(path);
+    if (!file.is_open()) {
+        throw runtime_error("Could not open " + path);
+    }
+
+    vector<Song> songs;
+    string line;
+    int skipped = 0;
+
+    while (getline(file, line)) {
+        vector<string> fields = splitCsvLine(line);
+
+        if (fields.size() != COLUMN_COUNT) { //Check that row has 21 columns
+            skipped++;
+            continue;
+        }
+
+        Song song;
+
+        try { //assign fields
+            song.trackId = fields[COL_TRACK_ID];
+            song.artists = fields[COL_ARTISTS];
+            song.albumName = fields[COL_ALBUM];
+            song.trackName = fields[COL_TRACK_NAME];
+            song.genre = fields[COL_GENRE];
+            song.popularity = stoi(fields[COL_POPULARITY]);
+            song.durationMs = stoi(fields[COL_DURATION]);
+            song.isExplicit = fields[COL_EXPLICIT] == "True";
+            song.danceability = stod(fields[COL_DANCEABILITY]);
+            song.energy = stod(fields[COL_ENERGY]);
+            song.valence = stod(fields[COL_VALENCE]);
+            song.tempo = stod(fields[COL_TEMPO]);
+        }
+        catch (const exception&) {
+            skipped++;
+            continue;
+        }
+
+    }
+    cout << "Loaded " << songs.size() << " songs, skipped " << skipped << " rows\n";
+    return songs;
 }
 
-std::vector<std::string> splitCsvLine(const std::string& line) {
-    return {};
+//Split file using commas
+vector<string> splitCsvLine(const string& line) { 
+    vector<string> fields;
+    stringstream ss(line);
+    string field;
+
+    while (getline(ss, field, ',')) {
+        fields.push_back(field);
+    }
+
+    return fields;
 }
