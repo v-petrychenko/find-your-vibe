@@ -1,8 +1,32 @@
+
 #pragma once
 
 #include "IndexTree.h"
 
 class RedBlackTree : public IndexTree {
+
+    enum class Color { Red, Black };
+
+    struct Node {
+        double key;
+        std::vector<int> indices;
+
+        Node* left = nullptr;
+        Node* right = nullptr;
+        Node* parent = nullptr;
+
+        Color color = Color::Red;
+
+        Node(double k, int  index, Node* p) {
+            key = k;
+            indices.push_back(index);
+            parent = p;
+        }
+    };
+
+    Node* root = nullptr ;
+    std::size_t count = 0;
+
 public:
     RedBlackTree();
     ~RedBlackTree() override;
@@ -19,6 +43,4 @@ public:
     std::size_t nodeCount() const override;
     std::size_t memoryBytes() const override;
     std::string name() const override;
-
-private:
 };

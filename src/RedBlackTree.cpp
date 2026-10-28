@@ -1,7 +1,9 @@
+
 #include "RedBlackTree.h"
 
-RedBlackTree::RedBlackTree() {
-}
+using namespace std;
+
+RedBlackTree::RedBlackTree() = default;
 
 RedBlackTree::~RedBlackTree() {
     clear();
@@ -10,11 +12,11 @@ RedBlackTree::~RedBlackTree() {
 void RedBlackTree::insert(double key, int songIndex) {
 }
 
-std::vector<int> RedBlackTree::find(double key) const {
+vector<int> RedBlackTree::find(double key) const {
     return {};
 }
 
-std::vector<int> RedBlackTree::range(double lo, double hi) const {
+vector<int> RedBlackTree::range(double lo, double hi) const {
     return {};
 }
 
@@ -25,14 +27,14 @@ int RedBlackTree::height() const {
     return 0;
 }
 
-std::size_t RedBlackTree::nodeCount() const {
+size_t RedBlackTree::nodeCount() const {
+    return count;
+}
+
+size_t RedBlackTree::memoryBytes() const {
     return 0;
 }
 
-std::size_t RedBlackTree::memoryBytes() const {
-    return 0;
-}
-
-std::string RedBlackTree::name() const {
+string RedBlackTree::name() const {
     return "Red-Black Tree";
 }
