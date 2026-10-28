@@ -27,6 +27,8 @@ class RedBlackTree : public IndexTree {
     Node* root = nullptr ;
     std::size_t count = 0;
 
+    static void destroy(Node* node);
+
 public:
     RedBlackTree();
     ~RedBlackTree() override;
