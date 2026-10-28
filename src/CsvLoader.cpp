@@ -43,6 +43,8 @@ std::vector<Song> loadSongs(const std::string& path) {
 
     vector<Song> songs;
     string line;
+
+    getline(file, line);
     int skipped = 0;
 
     while (getline(file, line)) {
@@ -50,6 +52,10 @@ std::vector<Song> loadSongs(const std::string& path) {
 
         if (fields.size() != COLUMN_COUNT) { //Check that row has 21 columns
             skipped++;
+        // if (skipped <= 5) {
+        //     cout << fields.size() << "\n";
+        //     cout << line << "\n";
+        // }
             continue;
         }
 
@@ -73,7 +79,7 @@ std::vector<Song> loadSongs(const std::string& path) {
             skipped++;
             continue;
         }
-
+        songs.push_back(song);
     }
     cout << "Loaded " << songs.size() << " songs, skipped " << skipped << " rows\n";
     return songs;
