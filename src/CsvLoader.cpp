@@ -1,3 +1,4 @@
+
 #include "CsvLoader.h"
 #include <fstream>
 #include <iostream>
@@ -92,10 +93,16 @@ vector<string> splitCsvLine(const string& line) {
     vector<string> fields;
     string current;
     bool inQuotes = false;
-    for (int i = 0; i < line.size(); i++) {
+    for (size_t i = 0; i < line.size(); i++) {
         char c = line[i];
         if (c == '"') {
-            inQuotes = !inQuotes;
+            if (inQuotes && i + 1 < line.size() && line[i + 1] == '"') {
+                current += '"';
+                i++;
+            }
+            else {
+                inQuotes = !inQuotes;
+            }
         }
         else if (c == ',' && !inQuotes) {
             fields.push_back(current);
