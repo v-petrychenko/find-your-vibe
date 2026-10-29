@@ -1,6 +1,7 @@
 
 #include "RedBlackTree.h"
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -114,9 +115,22 @@ void RedBlackTree::destroy(Node* node) {
     delete node;
 }
 
+
 int RedBlackTree::height() const {
-    return 0;
+    return heightOf(root);
 }
+
+int RedBlackTree::heightOf(const Node* node) {
+    if (node == nullptr) {
+        return 0;
+    }
+    //Find height of L and R subtrees
+    int leftHeight = heightOf(node-> left);
+    int rightHeight = heightOf(node->right);
+
+    return 1 + max(leftHeight, rightHeight);
+}
+
 
 size_t RedBlackTree::nodeCount() const {
     return count;
