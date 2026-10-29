@@ -29,5 +29,16 @@ int main() {
         cout << "#2 FAIL" << endl;
     }
 
+    //#3 Range search
+    vector<int> rangeResult = tree.range(25, 65);
+
+    if (rangeResult == vector<int>{1, 3, 0}) {
+        cout << "#3 PASS" << endl;
+    }
+    else {
+        cout << "#3 FAIL" << endl;
+    }
+
+
     return 0;
 }

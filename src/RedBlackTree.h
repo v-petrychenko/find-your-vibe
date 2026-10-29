@@ -28,6 +28,7 @@ class RedBlackTree : public IndexTree {
     std::size_t count = 0;
 
     static void destroy(Node* node);
+    static void rangeHelper(const Node* node, double lo, double hi, std::vector<int>& result);
 
 public:
     RedBlackTree();

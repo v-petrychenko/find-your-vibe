@@ -76,9 +76,28 @@ vector<int> RedBlackTree::find(double key) const {
 }
 
 
+
 vector<int> RedBlackTree::range(double lo, double hi) const {
-    return {};
+    vector<int> result;
+    rangeHelper(root, lo, hi, result);
+    return result;
 }
+
+void RedBlackTree::rangeHelper(const Node* node, double lo, double hi, vector<int>& result) {
+    if (node == nullptr) {
+        return;
+    }
+    //Go through the tree 
+    rangeHelper(node->left, lo, hi, result);
+    if (node-> key > lo && node->key < hi) {
+        for (int index : node-> indices) {
+            result.push_back(index);
+        }
+    }
+
+    rangeHelper(node ->right, lo, hi, result);
+}
+
 
 void RedBlackTree::clear() {
     destroy(root);
