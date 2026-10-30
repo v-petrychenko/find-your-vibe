@@ -1,5 +1,6 @@
 
 #include "RedBlackTree.h"
+#include <iostream>
 #include <algorithm>
 
 using namespace std;
@@ -47,7 +48,7 @@ void RedBlackTree::insert(double key, int songIndex) {
     }
 
     count++;
-    root->color = Color::Black;
+    fixInsert(newNode);
 }
 
 
@@ -215,4 +216,67 @@ void RedBlackTree::rotateRight(Node* node) {
     //Move node under left child
     leftChild->right = node;
     node->parent = leftChild;
+}
+
+bool RedBlackTree::isRed(const Node* node) {
+    return node != nullptr && node->color == Color::Red;
+}
+
+
+void RedBlackTree::fixInsert(Node* node) {
+    while (node != root && isRed(node->parent)) {
+        Node* parent = node-> parent;
+        Node* grandparent = parent->parent;
+
+        if (parent == grandparent->left) {
+            Node* uncle =  grandparent->right;
+
+            //Uncle is red
+            if (isRed(uncle)) {
+                //cout << "Recolor: " << grandparent->key << "\n";
+                parent->color = Color::Black;
+                uncle->color = Color::Black;
+                grandparent->color = Color::Red;
+                node = grandparent;
+            }
+            else {
+                //Node is on inside
+                if (node == parent-> right) {
+                    rotateLeft(parent);
+                    node = parent;
+                }
+
+                //Rotate grandparent
+                parent->color = Color::Black;
+                grandparent ->color = Color::Red ;
+                rotateRight(grandparent);
+            }
+        }
+        else {
+            Node* uncle = grandparent->left;
+
+            //Uncle is red
+            if (isRed(uncle)) {
+                //cout << "Recolor: " << grandparent->key << "\n";
+                parent->color = Color::Black;
+                uncle->color = Color::Black;
+                grandparent->color = Color::Red;
+                node = grandparent;
+            }
+            else {
+                //Node is on inside
+                if (node  == parent->left) {
+                    rotateRight(parent);
+                    node = parent;
+                }
+
+                //Rotate grandparent
+                parent->color = Color::Black;
+                grandparent-> color = Color::Red;
+                rotateLeft (grandparent);
+            }
+        }
+    }
+
+    root->color = Color::Black;
 }

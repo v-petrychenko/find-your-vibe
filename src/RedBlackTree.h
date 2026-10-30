@@ -33,6 +33,8 @@ class RedBlackTree : public IndexTree {
     static std::size_t indexBytes(const Node* node);
     void rotateLeft(Node* node);
     void rotateRight(Node* node);
+    static bool isRed(const Node* node);
+    void fixInsert(Node* node);
 
     friend void testRotations();
 

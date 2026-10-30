@@ -30,6 +30,45 @@ void testRotations() {
     check(rightTree.height() == 2, "Right rotation height");
 }
 
+void testBalancing() {
+    //left rotation
+    RedBlackTree tree1;
+    tree1.insert(10, 0);
+    tree1.insert(20, 1);
+    tree1.insert(30, 2);
+    check(tree1.height() == 2, "Left rotation");
+
+    //right rotation
+    RedBlackTree tree2;
+    tree2.insert(30, 0);
+    tree2.insert(20, 1);
+    tree2.insert(10, 2);
+    check(tree2.height() == 2, "Right rotation");
+
+    //left-right rotation
+    RedBlackTree tree3;
+    tree3.insert(30, 0);
+    tree3.insert(10, 1);
+    tree3.insert(20, 2);
+    check(tree3.height() == 2, "Left-right rotation");
+
+    //right-left rotation
+    RedBlackTree tree4;
+    tree4.insert(10, 0);
+    tree4.insert(30, 1);
+    tree4.insert(20, 2);
+    check(tree4.height() == 2, "Right-left rotation");
+
+    //recoloring
+    RedBlackTree tree5;
+    tree5.insert(10, 0);
+    tree5.insert(5, 1);
+    tree5.insert(15, 2);
+    tree5.insert(1, 3);
+    check(tree5.height() == 3, "Recoloring");
+}
+
+
 int main() {
     RedBlackTree tree;
 
@@ -82,5 +121,9 @@ int main() {
 
     //rotations
     testRotations();
+
+    //balancing
+    testBalancing();
+    
     return 0;
 }
