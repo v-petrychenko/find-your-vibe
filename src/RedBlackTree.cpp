@@ -1,4 +1,3 @@
-
 #include "RedBlackTree.h"
 #include <iostream>
 #include <algorithm>
@@ -244,6 +243,7 @@ void RedBlackTree::fixInsert(Node* node) {
                 if (node == parent-> right) {
                     rotateLeft(parent);
                     node = parent;
+                    parent = node->parent;
                 }
 
                 //Rotate grandparent
@@ -268,6 +268,7 @@ void RedBlackTree::fixInsert(Node* node) {
                 if (node  == parent->left) {
                     rotateRight(parent);
                     node = parent;
+                    parent = node->parent;
                 }
 
                 //Rotate grandparent

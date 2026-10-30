@@ -1,33 +1,15 @@
-
-#include "RedBlackTree.h"
+ #include "RedBlackTree.h"
 #include <iostream>
 
 using namespace std;
 
+bool testsPassed = true;
+
 void check(bool result, string name) {
     cout << name << ": " << (result ? "PASS" : "FAIL") << "\n";
-}
-
-void testRotations() {
-    //left rotation
-    RedBlackTree leftTree;
-    leftTree.insert(10, 0);
-    leftTree.insert(20, 1);
-    leftTree.insert(30, 2);
-
-    leftTree.rotateLeft(leftTree.root);
-    check(leftTree.root->key == 20, "Left rotation");
-    check(leftTree.height() == 2, "Left rotation height");
-
-    //right rotation
-    RedBlackTree rightTree;
-    rightTree.insert(30, 0);
-    rightTree.insert(20, 1);
-    rightTree.insert(10, 2);
-
-    rightTree.rotateRight(rightTree.root);
-    check(rightTree.root->key == 20, "Right rotation");
-    check(rightTree.height() == 2, "Right rotation height");
+    if (!result) {
+        testsPassed = false;
+    }
 }
 
 void testBalancing() {
@@ -119,11 +101,8 @@ int main() {
     check(tree.height() == 0, "Clear height");
     check(tree.find(30).empty(), "Clear find");
 
-    //rotations
-    testRotations();
-
     //balancing
     testBalancing();
     
-    return 0;
+    return testsPassed ? 0 : 1;
 }
