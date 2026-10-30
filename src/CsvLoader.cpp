@@ -78,7 +78,7 @@ vector<Song> loadSongs(const string& path) {
             skipped++;
             continue;
         }
-        songs.push_back(move(song));
+        songs.push_back(std::move(song));
     }
     cout << "Loaded " << songs.size() << " songs, skipped " << skipped << " rows\n";
     return songs;

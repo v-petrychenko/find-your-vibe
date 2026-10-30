@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     }
 
     //Insert songs into the BST
-    for (int i = 0; i < songs.size(); i++) {
+    for (size_t i = 0; i < songs.size(); i++) {
         double key = featureValue(songs[i], Feature::Tempo);
         rbTree.insert(key, i);
     }
@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     cout << "Songs with tempo 120: " << found.size() << endl;
 
     //Print first few songs
-    for (int i = 0; i < found.size() && i < 3; i++) {
+    for (size_t i = 0; i < found.size() && i < 3; i++) {
         cout << songs[found[i]].trackName << endl;
     }
 

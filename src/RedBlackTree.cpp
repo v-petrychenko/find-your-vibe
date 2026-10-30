@@ -1,6 +1,5 @@
 
 #include "RedBlackTree.h"
-#include <iostream>
 #include <algorithm>
 
 using namespace std;
@@ -58,7 +57,6 @@ vector<int> RedBlackTree::find(double key) const {
     //Search for key
     while (current != nullptr) {
         if (key == current-> key) {
-            //cout << "key " << key << endl;
             return current->indices;
         }
         if (key < current-> key) {
@@ -163,4 +161,58 @@ size_t RedBlackTree::indexBytes(const Node* node) {
 
 string RedBlackTree::name() const {
     return "Red-Black Tree";
+}
+
+void RedBlackTree::rotateLeft(Node* node) {
+    Node* rightChild = node ->right;
+
+    //Move left subtree of right child
+    node->right = rightChild->left;
+    if (rightChild->left != nullptr) {
+        rightChild->left->parent = node;
+    }
+
+    //Connect right child to old parent
+    rightChild->parent = node-> parent;
+
+    if (node->parent == nullptr) {
+        root = rightChild;
+    }
+    else if (node == node->parent->left) {
+        node->parent->left  = rightChild;
+    }
+    else {
+        node->parent->right = rightChild;
+    }
+
+    //Move node under right child
+    rightChild->left = node;
+    node->parent = rightChild;
+}
+
+void RedBlackTree::rotateRight(Node* node) {
+    Node* leftChild =  node->left;
+
+    //Move right subtree of left child
+    node-> left = leftChild->right;
+    if (leftChild->right != nullptr) {
+        leftChild->right->parent = node;
+    }
+
+    //Connect left child to old parent
+    leftChild->parent = node->parent;
+
+    if (node->parent == nullptr) {
+        root = leftChild;
+    }
+    else if (node == node->parent->right) {
+        node->parent->right = leftChild;
+    }
+    else {
+        node->parent->left = leftChild;
+    }
+
+    //Move node under left child
+    leftChild->right = node;
+    node->parent = leftChild;
 }
