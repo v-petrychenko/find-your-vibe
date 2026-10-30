@@ -16,7 +16,6 @@ void RedBlackTree::insert(double key, int songIndex) {
     Node* current = root;
     Node* parent = nullptr;
 
-    //cout << "inserted: " << key << endl;
 
     //Find where to insert node
     while (current != nullptr) {
@@ -24,7 +23,6 @@ void RedBlackTree::insert(double key, int songIndex) {
 
         if (key == current->key) {
             current->indices.push_back(songIndex);
-            //cout << "duplicate: " << key << endl;
             return;
         }
 
@@ -51,8 +49,6 @@ void RedBlackTree::insert(double key, int songIndex) {
 
     count++;
     root->color = Color::Black;
-
-    //cout << "Total: " << count << endl;
 }
 
 
@@ -80,6 +76,9 @@ vector<int> RedBlackTree::find(double key) const {
 
 vector<int> RedBlackTree::range(double lo, double hi) const {
     vector<int> result;
+    if (lo > hi) {
+        return result;
+    }
     rangeHelper(root, lo, hi, result);
     return result;
 }
@@ -88,15 +87,22 @@ void RedBlackTree::rangeHelper(const Node* node, double lo, double hi, vector<in
     if (node == nullptr) {
         return;
     }
-    //Go through the tree 
-    rangeHelper(node->left, lo, hi, result);
-    if (node-> key > lo && node->key < hi) {
-        for (int index : node-> indices) {
-            result.push_back(index);
+
+    //only search left (if val in range)
+    if (node->key > lo) {
+         rangeHelper(node->left, lo, hi, result);
+    }
+
+    if (node->key >= lo && node-> key <= hi) {
+        for (int index : node->indices) {
+            result.push_back(index) ;
         }
     }
 
-    rangeHelper(node ->right, lo, hi, result);
+    //Only search right (if val in range)
+    if (node->key < hi) {
+        rangeHelper(node-> right, lo, hi, result);
+    }
 }
 
 
@@ -146,8 +152,8 @@ size_t RedBlackTree::indexBytes(const Node* node) {
         return 0;
     }
     //Count memory used by songs
-    // memory(btyes) = count * size(node) + bytes(root)
-    size_t bytes = node-> indices.size() * sizeof(int);
+    // memory(bytes) = count * size(node) + bytes(root)
+    size_t bytes = node-> indices.capacity() * sizeof(int);
 
     bytes +=  indexBytes(node->left);
     bytes += indexBytes(node->right);

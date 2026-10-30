@@ -32,11 +32,31 @@ int main() {
 
     //memory usage
     size_t before = tree.memoryBytes();
-    cout << "before: " << before << endl;
     tree.insert(40, 4);
-    cout << "after: " << tree.memoryBytes() << endl;
     check(tree.memoryBytes() > before, "Memory");
 
+    //range boundaries
+    check(tree.range(30, 50) == vector<int>{1, 3, 4, 0}, "Range boundaries");
+
+    //single value range
+    check(tree.range(70, 70) == vector<int>{2}, "Single value range");
+
+    //invalid range
+    check(tree.range(70, 30).empty(), "Invalid range");
+
+    //missing key
+    check(tree.find(999).empty(), "Missing key");
+
+    //duplicate insertion
+    tree.insert(30, 5);
+    check(tree.nodeCount() == 4, "Duplicate count");
+    check(tree.find(30) == vector<int>{1, 3, 5}, "Duplicate values");
+
+    //clear
+    tree.clear();
+    check(tree.nodeCount() == 0, "Clear count");
+    check(tree.height() == 0, "Clear height");
+    check(tree.find(30).empty(), "Clear find");
 
     return 0;
 }
