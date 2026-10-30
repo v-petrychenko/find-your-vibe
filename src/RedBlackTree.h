@@ -30,6 +30,7 @@ class RedBlackTree : public IndexTree {
     static void destroy(Node* node);
     static void rangeHelper(const Node* node, double lo, double hi, std::vector<int>& result);
     static int heightOf(const Node* node);
+    static std::size_t indexBytes(const Node* node);
 
 public:
     RedBlackTree();

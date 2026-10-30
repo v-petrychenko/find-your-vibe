@@ -30,5 +30,13 @@ int main() {
     //height
     check(tree.height() == 2, "Height");
 
+    //memory usage
+    size_t before = tree.memoryBytes();
+    cout << "before: " << before << endl;
+    tree.insert(40, 4);
+    cout << "after: " << tree.memoryBytes() << endl;
+    check(tree.memoryBytes() > before, "Memory");
+
+
     return 0;
 }

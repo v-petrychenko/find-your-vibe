@@ -136,9 +136,24 @@ size_t RedBlackTree::nodeCount() const {
     return count;
 }
 
+
 size_t RedBlackTree::memoryBytes() const {
-    return 0;
+    return count * sizeof(Node) + indexBytes(root);
 }
+
+size_t RedBlackTree::indexBytes(const Node* node) {
+    if (node == nullptr) {
+        return 0;
+    }
+    //Count memory used by songs
+    // memory(btyes) = count * size(node) + bytes(root)
+    size_t bytes = node-> indices.size() * sizeof(int);
+
+    bytes +=  indexBytes(node->left);
+    bytes += indexBytes(node->right);
+    return bytes;
+}
+
 
 string RedBlackTree::name() const {
     return "Red-Black Tree";
