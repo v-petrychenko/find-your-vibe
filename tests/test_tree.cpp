@@ -49,7 +49,18 @@ void testBalancing() {
     tree5.insert(1, 3);
     check(tree5.height() == 3, "Recoloring");
 
+    //balancing
     check(tree1.isValid() && tree2.isValid() && tree3.isValid() && tree4.isValid() && tree5.isValid(), "Balancing valid");
+
+    //sorted insertion
+    RedBlackTree sorted;
+    for (int i = 1; i <= 100000; i++) {
+        sorted.insert(i, i);
+    }
+
+    check(sorted.nodeCount() == 100000, "Sorted count");
+    check(sorted.height() == 31, "Sorted height");
+    check(sorted.isValid(), "Sorted valid");
 }
 
 
@@ -102,7 +113,7 @@ int main() {
     check(tree.nodeCount() == 0, "Clear count");
     check(tree.height() == 0, "Clear height");
     check(tree.find(30).empty(), "Clear find");
-    
+
     check(tree.isValid(), "Clear valid");
 
     //balancing
