@@ -1,4 +1,4 @@
- #include "RedBlackTree.h"
+#include "RedBlackTree.h"
 #include <iostream>
 
 using namespace std;
@@ -48,6 +48,8 @@ void testBalancing() {
     tree5.insert(15, 2);
     tree5.insert(1, 3);
     check(tree5.height() == 3, "Recoloring");
+
+    check(tree1.isValid() && tree2.isValid() && tree3.isValid() && tree4.isValid() && tree5.isValid(), "Balancing valid");
 }
 
 
@@ -100,6 +102,8 @@ int main() {
     check(tree.nodeCount() == 0, "Clear count");
     check(tree.height() == 0, "Clear height");
     check(tree.find(30).empty(), "Clear find");
+    
+    check(tree.isValid(), "Clear valid");
 
     //balancing
     testBalancing();

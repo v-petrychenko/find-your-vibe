@@ -35,7 +35,8 @@ class RedBlackTree : public IndexTree {
     void rotateRight(Node* node);
     static bool isRed(const Node* node);
     void fixInsert(Node* node);
-
+    static int blackHeight(const Node* node, const Node* minNode, const Node* maxNode);
+    
     friend void testRotations();
 
 public:
@@ -54,4 +55,5 @@ public:
     std::size_t nodeCount() const override;
     std::size_t memoryBytes() const override;
     std::string name() const override;
+    bool isValid() const;
 };

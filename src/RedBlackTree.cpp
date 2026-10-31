@@ -281,3 +281,46 @@ void RedBlackTree::fixInsert(Node* node) {
 
     root->color = Color::Black;
 }
+
+bool RedBlackTree::isValid() const {
+    if (root != nullptr && (isRed(root) || root->parent != nullptr)) {
+        return false;
+    }
+    return blackHeight(root, nullptr, nullptr) != -1;
+}
+
+int RedBlackTree::blackHeight(const Node* node, const Node* minNode, const Node* maxNode) {
+    if (node == nullptr) {
+        return 1;
+    }
+
+    //Check key order
+    if (minNode != nullptr && node->key <= minNode-> key) {
+        return -1;
+    }
+    if (maxNode != nullptr && node->key >= maxNode->key) {
+        return -1;
+    }
+
+    //Check parent pointers
+    if (node-> left !=  nullptr && node->left->parent != node) {
+        return -1;
+    }
+    if (node->right != nullptr && node->right->parent != node ) {
+        return -1;
+    }
+
+    //Red nodes cannot have red children
+    if (isRed(node) && (isRed(node->left) || isRed(node->right))) {
+        return -1;
+    }
+
+    int left = blackHeight(node->left, minNode, node) ;
+    int right = blackHeight(node->right , node, maxNode);
+
+    if (left == -1 ||  right == -1 || left != right) {
+        return -1 ;
+    }
+
+    return left + (isRed(node) ? 0 : 1);
+}
