@@ -1,5 +1,4 @@
 #include "RedBlackTree.h"
-#include <iostream>
 #include <algorithm>
 
 using namespace std;
@@ -232,7 +231,6 @@ void RedBlackTree::fixInsert(Node* node) {
 
             //Uncle is red
             if (isRed(uncle)) {
-                //cout << "Recolor: " << grandparent->key << "\n";
                 parent->color = Color::Black;
                 uncle->color = Color::Black;
                 grandparent->color = Color::Red;
@@ -257,7 +255,6 @@ void RedBlackTree::fixInsert(Node* node) {
 
             //Uncle is red
             if (isRed(uncle)) {
-                //cout << "Recolor: " << grandparent->key << "\n";
                 parent->color = Color::Black;
                 uncle->color = Color::Black;
                 grandparent->color = Color::Red;

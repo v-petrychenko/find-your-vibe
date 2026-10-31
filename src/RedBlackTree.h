@@ -36,8 +36,6 @@ class RedBlackTree : public IndexTree {
     static bool isRed(const Node* node);
     void fixInsert(Node* node);
     static int blackHeight(const Node* node, const Node* minNode, const Node* maxNode);
-    
-    friend void testRotations();
 
 public:
     RedBlackTree();
