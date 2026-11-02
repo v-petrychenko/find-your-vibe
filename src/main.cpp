@@ -222,6 +222,42 @@ static bool searchExact(const vector<Song>& songs, const vector<IndexTree*>& tre
     return printSongs(songs,results);
 }
 
+//Verify tree results
+static void verifyTrees(const vector<Song>& songs, const vector<IndexTree*>& trees, const RedBlackTree& rbTree, Feature feature) {
+    double key = featureValue(songs[0], feature);
+    double lo = key;
+    double hi = featureValue(songs[songs.size() / 2], feature);
+    if (lo > hi) {
+        swap(lo, hi);
+    }
+
+    //Find expected results
+    vector<int> expectedExact;
+    vector<int> expectedRange;
+    for (size_t i = 0; i < songs.size(); i++) {
+        double value = featureValue(songs[i],feature);
+        if (value == key) {
+            expectedExact.push_back(i);
+        }
+        if (value >= lo && value <= hi) {
+            expectedRange.push_back(i);
+        }
+    }
+
+    //Compare results
+    cout << "\nVerifying " << featureName(feature) << endl;
+    for (IndexTree* tree : trees) {
+        vector<int> exact = tree-> find(key) ;
+        vector<int> range = tree->range(lo, hi);
+        sort(exact.begin(), exact.end());
+        sort(range.begin(), range.end());
+        cout << tree->name() << ":\n";
+        cout << "Exact search: " << (exact == expectedExact ? "PASS" : "FAIL") << endl;
+        cout << "Range search: " << (range == expectedRange ? "PASS" : "FAIL") << endl;
+    }
+    cout << "Red-Black Tree valid: " << (rbTree.isValid() ? "PASS" : "FAIL") << endl;
+}
+
 int main(int argc, char* argv[]) {
     string dataPath = argc > 1 ? argv[1] : "data/dataset.csv";
     vector<Song> songs;
@@ -307,6 +343,10 @@ int main(int argc, char* argv[]) {
             case 4:
                 cout << "\nCurrent feature: " << featureName(feature) << endl;
                 printStats(trees);
+                break;
+
+            case 5:
+                verifyTrees(songs, trees, rbTree, feature);
                 break;
 
             default:
