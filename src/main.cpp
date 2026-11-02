@@ -3,11 +3,14 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <chrono>
+#include <algorithm>
 
 #include "CsvLoader.h"
 #include "RedBlackTree.h"
 #include "IndexTree.h"
 #include "Song.h"
+
 
 using namespace std;
 
@@ -53,6 +56,25 @@ static int readChoice(int max) {
     }
 }
 
+//Read search value
+static bool readNumber(string prompt, double& value) {
+    string line;
+    while (true) {
+        cout << prompt;
+        if (!getline(cin, line)) {
+            return false;
+        }
+
+        stringstream input(line);
+        char extra;
+
+        if (input>>value && !(input>>extra)) {
+            return true;
+        }
+        cout << "Invalid number.\n";
+    }
+}
+
 static void buildTrees(const vector<Song>& songs, const vector<IndexTree*>& trees, Feature feature) {
     for (IndexTree* tree : trees) {
         tree->clear();
@@ -71,6 +93,76 @@ static void printStats(const vector<IndexTree*>& trees) {
         cout << "Height: " << tree-> height() << endl;
         cout << "Memory: " << tree->memoryBytes() << " bytes" << endl;
     }
+}
+
+//Print matching songs
+static void printSongs(const vector<Song>& songs, const vector<int>& results) {
+    if (results.empty()) {
+        cout << "No songs found.\n";
+        return;
+    }
+    cout << "\nFirst matches:\n";
+    for (size_t i = 0; i < results.size() && i < 3; i++) {
+        const Song& song = songs[results[i]];
+        cout << song.trackName << " - " << song.artists << endl;
+    }
+}
+
+//Search for range
+static bool searchRange(const vector<Song>& songs, const vector<IndexTree*>& trees, Feature feature) {
+    double lo, hi;
+    cout << "\nRange search for " << featureName(feature) << endl;
+    if (!readNumber("Minimum: ",lo)) {
+        return false;
+    }
+    if (!readNumber("Maximum: ", hi)) {
+        return false;
+    }
+
+    if (lo > hi ) {
+        swap(lo, hi);
+    }
+
+    vector<int> results;
+
+    for (IndexTree* tree :trees) {
+        auto start = chrono::steady_clock::now();
+        vector<int> found = tree->range(lo, hi);
+        auto end = chrono::steady_clock::now();
+        double time = chrono::duration<double, micro>(end - start).count();
+        cout << tree->name() << ": " << found.size() << " matches, " << time << " us\n";
+        if (tree == trees[0]) {
+            results  = found;
+        }
+    }
+
+    printSongs(songs, results);
+    return true;
+}
+
+//Search for exact
+static bool searchExact(const vector<Song>& songs, const vector<IndexTree*>& trees, Feature feature) {
+    double key;
+    cout << "\nExact search for " << featureName(feature) << endl;
+
+    if (!readNumber("Value: ", key)) {
+        return false;
+    }
+    vector<int> results;
+
+    for (IndexTree* tree : trees) {
+        auto start = chrono::steady_clock::now();
+        vector<int> found = tree->find(key);
+        auto end = chrono::steady_clock::now();
+        double time = chrono::duration<double, micro>(end - start).count();
+        cout << tree-> name() << ": " << found.size() << " matches, " << time << " us\n";
+        if (tree ==trees[0]) {
+            results = found;
+        }
+    }
+
+    printSongs(songs,results);
+    return true;
 }
 
 int main(int argc, char* argv[]) {
@@ -106,7 +198,19 @@ int main(int argc, char* argv[]) {
         if (choice == 0 || choice == -1) {
             break;
         }
+
         switch (choice) {
+            case 1:
+                if (!searchRange(songs, trees, feature)) {
+                    return 0;
+                }
+                break;
+
+            case 2:
+                if (!searchExact(songs, trees, feature)) {
+                    return 0;
+                }
+                break;
             case 3: {
                 cout << "\nSelect feature:\n";
                 cout << "1. Tempo\n";
