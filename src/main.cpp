@@ -5,6 +5,7 @@
 #include <sstream>
 #include <chrono>
 #include <algorithm>
+#include <cctype>
 
 #include "CsvLoader.h"
 #include "RedBlackTree.h"
@@ -75,6 +76,14 @@ static bool readNumber(string prompt, double& value) {
     }
 }
 
+//Convert text to lowercase
+static string lowerCase(string text) {
+    for (size_t i = 0; i < text.size(); i++) {
+        text[i] = tolower((unsigned char)text[i]);
+    }
+    return text;
+}
+
 static void buildTrees(const vector<Song>& songs, const vector<IndexTree*>& trees, Feature feature) {
     for (IndexTree* tree : trees) {
         tree->clear();
@@ -96,16 +105,66 @@ static void printStats(const vector<IndexTree*>& trees) {
 }
 
 //Print matching songs
-static void printSongs(const vector<Song>& songs, const vector<int>& results) {
+static bool printSongs(const vector<Song>& songs, const vector<int>& results) {
     if (results.empty()) {
         cout << "No songs found.\n";
-        return;
+        return true;
     }
-    cout << "\nFirst matches:\n";
-    for (size_t i = 0; i < results.size() && i < 3; i++) {
-        const Song& song = songs[results[i]];
-        cout << song.trackName << " - " << song.artists << endl;
+
+    //Genre filter
+    string genre;
+    cout << "Genre (Enter for all): ";
+    if (!getline(cin, genre)) {
+        return false;
     }
+    genre = lowerCase(genre);
+
+    //Sort by popularity
+    vector<int> sorted = results;
+    sort(sorted.begin(), sorted.end(),[&songs](int a, int b) {
+        if (songs[a].popularity == songs[b].popularity) {
+            return a < b;
+        }
+        return songs[a].popularity > songs[b].popularity;
+    });
+
+    //Remove duplicates
+    vector<int> shown;
+
+    for (int index : sorted) {
+        const Song& song = songs[index];
+        if (!genre.empty() && lowerCase(song.genre) !=genre) {
+            continue;
+        }
+        bool duplicate = false;
+        for (int oldIndex : shown) {
+            if (song.trackName == songs[oldIndex].trackName &&
+                song.artists == songs[oldIndex].artists){
+                duplicate  = true;
+                break;
+            }
+        }
+        if (duplicate) {
+            continue;
+        }
+        shown.push_back(index);
+        if (shown.size() == 10) {
+            break;
+        }
+    }
+
+    if (shown.empty()) {
+        cout << "No songs found.\n";
+        return true;
+    }
+    cout << "\nTop songs:\n";
+    for (size_t i = 0; i < shown.size(); i++) {
+        const Song& song =  songs[shown[i]];
+        cout << i + 1 << ". " << song.trackName << " - "
+             << song.artists << " (" << song.popularity << ")\n";
+    }
+
+    return true;
 }
 
 //Search for range
@@ -136,8 +195,7 @@ static bool searchRange(const vector<Song>& songs, const vector<IndexTree*>& tre
         }
     }
 
-    printSongs(songs, results);
-    return true;
+    return printSongs(songs, results);
 }
 
 //Search for exact
@@ -161,8 +219,7 @@ static bool searchExact(const vector<Song>& songs, const vector<IndexTree*>& tre
         }
     }
 
-    printSongs(songs,results);
-    return true;
+    return printSongs(songs,results);
 }
 
 int main(int argc, char* argv[]) {
