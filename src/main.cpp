@@ -6,6 +6,8 @@
 #include <chrono>
 #include <algorithm>
 #include <cctype>
+#include <random>
+#include <utility>
 
 #include "CsvLoader.h"
 #include "RedBlackTree.h"
@@ -84,28 +86,38 @@ static string lowerCase(string text) {
     return text;
 }
 
-static void buildTrees(const vector<Song>& songs, const vector<IndexTree*>& trees, Feature feature) {
+static void buildTrees(const vector<Song>& songs, const vector<IndexTree*>& trees, vector<double>& buildTimes, Feature feature) {
+    buildTimes.clear();
+
     for (IndexTree* tree : trees) {
         tree->clear();
 
-        for (size_t i = 0; i < songs.size(); i++) {
+        auto start = chrono::steady_clock::now();
+
+        for (size_t i = 0; i < songs.size(); i++){
             tree-> insert(featureValue(songs[i], feature), i);
         }
+
+        auto end = chrono::steady_clock::now();
+        double time = chrono::duration<double, milli>(end - start).count();
+        buildTimes.push_back(time);
     }
 }
 
 //Print tree stats
-static void printStats(const vector<IndexTree*>& trees) {
-    for (IndexTree* tree : trees) {
+static void printStats(const vector<IndexTree*>& trees, const vector<double>& buildTimes) {
+    for (size_t i = 0; i < trees.size(); i++) {
+        IndexTree* tree = trees[i];
         cout << "\n" << tree->name() << endl;
         cout << "Nodes: " << tree->nodeCount() << endl;
         cout << "Height: " << tree-> height() << endl;
         cout << "Memory: " << tree->memoryBytes() << " bytes" << endl;
+        cout << "Build time: " << buildTimes[i] << " ms" << endl;
     }
 }
 
 //Print matching songs
-static bool printSongs(const vector<Song>& songs, const vector<int>& results) {
+static bool printSongs(const vector<Song>& songs, const vector<int>& results, Feature feature) {
     if (results.empty()) {
         cout << "No songs found.\n";
         return true;
@@ -158,10 +170,15 @@ static bool printSongs(const vector<Song>& songs, const vector<int>& results) {
         return true;
     }
     cout << "\nTop songs:\n";
-    for (size_t i = 0; i < shown.size(); i++) {
+    for (size_t i = 0; i <shown.size(); i++) {
         const Song& song =  songs[shown[i]];
         cout << i + 1 << ". " << song.trackName << " - "
-             << song.artists << " (" << song.popularity << ")\n";
+             << song.artists << " | " << featureName(feature)
+             << ": " << featureValue(song, feature);
+        if (feature !=Feature::Popularity) {
+            cout << " | Popularity: " << song.popularity;
+        }
+        cout << "\n";
     }
 
     return true;
@@ -195,7 +212,7 @@ static bool searchRange(const vector<Song>& songs, const vector<IndexTree*>& tre
         }
     }
 
-    return printSongs(songs, results);
+    return printSongs(songs, results, feature);
 }
 
 //Search for exact
@@ -219,41 +236,108 @@ static bool searchExact(const vector<Song>& songs, const vector<IndexTree*>& tre
         }
     }
 
-    return printSongs(songs,results);
+    return printSongs(songs,results,feature);
 }
 
-//Verify tree results
+//Verify tree result
 static void verifyTrees(const vector<Song>& songs, const vector<IndexTree*>& trees, const RedBlackTree& rbTree, Feature feature) {
-    double key = featureValue(songs[0], feature);
-    double lo = key;
-    double hi = featureValue(songs[songs.size() / 2], feature);
-    if (lo > hi) {
-        swap(lo, hi);
+    mt19937 rng(42);
+    uniform_int_distribution<size_t> randomIndex(0, songs.size() - 1);
+
+    vector<double> keys;
+    vector<pair<double, double>> ranges;
+
+    //Random exact searches
+    for (int i = 0; i < 20; i++) {
+        double key = featureValue(songs[randomIndex(rng)], feature);
+        keys.push_back(key);
     }
 
-    //Find expected results
-    vector<int> expectedExact;
-    vector<int> expectedRange;
-    for (size_t i = 0; i < songs.size(); i++) {
+    //Random ranges
+    for (int i = 0; i < 50; i++) {
+        double lo = featureValue(songs[randomIndex(rng)], feature);
+        double hi = featureValue(songs[randomIndex(rng)], feature);
+        if (lo > hi) {
+            swap(lo, hi);
+        }
+        ranges.push_back({lo, hi});
+    }
+
+    //Find min and max values
+    double minValue = featureValue(songs[0], feature);
+    double maxValue = minValue;
+    for (size_t i = 1; i < songs.size(); i++) {
         double value = featureValue(songs[i],feature);
-        if (value == key) {
-            expectedExact.push_back(i);
+        if (value < minValue) {
+            minValue = value;
         }
-        if (value >= lo && value <= hi) {
-            expectedRange.push_back(i);
+        if (value > maxValue) {
+            maxValue =value;
         }
     }
 
-    //Compare results
+    //Add boundary cases
+    keys.push_back(minValue);
+    keys.push_back(maxValue);
+    keys.push_back(maxValue + 1);
+    ranges.push_back({minValue, maxValue});
+    ranges.push_back({minValue, minValue});
+    ranges.push_back({maxValue, maxValue});
+    ranges.push_back({minValue - 1, minValue - 1});
+    ranges.push_back({maxValue + 1, maxValue + 1});
+
     cout << "\nVerifying " << featureName(feature) << endl;
+
     for (IndexTree* tree : trees) {
-        vector<int> exact = tree-> find(key) ;
-        vector<int> range = tree->range(lo, hi);
-        sort(exact.begin(), exact.end());
-        sort(range.begin(), range.end());
-        cout << tree->name() << ":\n";
-        cout << "Exact search: " << (exact == expectedExact ? "PASS" : "FAIL") << endl;
-        cout << "Range search: " << (range == expectedRange ? "PASS" : "FAIL") << endl;
+        size_t exactPassed = 0;
+        size_t rangePassed = 0;
+
+        //Check exact searches
+        for (double key : keys) {
+            vector<int> expected;
+            for (size_t i = 0; i < songs.size(); i++) {
+                if (featureValue(songs[i], feature) == key) {
+                    expected.push_back(i);
+                }
+            }
+
+            vector<int> actual = tree-> find(key);
+            sort(actual.begin(), actual.end());
+            if (actual == expected) {
+                exactPassed++;
+            }
+            else {
+                cout << "Exact search failed for " << key << endl;
+            }
+        }
+
+        //Check range searches
+        for (auto range : ranges) {
+            double lo = range.first;
+            double hi = range.second;
+            vector<int> expected;
+            for (size_t i = 0; i < songs.size(); i++) {
+                double value= featureValue(songs[i], feature);
+                if (value >= lo && value <= hi) {
+                    expected.push_back(i);
+                }
+            }
+
+            vector<int> actual = tree-> range(lo, hi);
+            sort(actual.begin(), actual.end());
+            if (actual == expected){
+                rangePassed++;
+            }
+            else {
+                cout << "Range search failed for " << lo << " - " << hi << endl;
+            }
+        }
+
+        cout << "\n" << tree->name() << ":\n";
+        cout << "Exact searches: " << exactPassed << "/" << keys.size()
+             << (exactPassed == keys.size() ? " PASS" : " FAIL") << endl;
+        cout << "Range searches: " << rangePassed << "/" << ranges.size()
+             << (rangePassed == ranges.size() ? " PASS" : " FAIL") << endl;
     }
     cout << "Red-Black Tree valid: " << (rbTree.isValid() ? "PASS" : "FAIL") << endl;
 }
@@ -263,6 +347,7 @@ int main(int argc, char* argv[]) {
     vector<Song> songs;
     RedBlackTree rbTree;
     vector<IndexTree*> trees = {&rbTree};
+    vector<double> buildTimes;
     Feature feature = Feature::Tempo;
 
     //Load songs
@@ -279,7 +364,7 @@ int main(int argc, char* argv[]) {
     }
 
     //Build trees
-    buildTrees(songs, trees, feature);
+    buildTrees(songs, trees, buildTimes, feature);
 
     cout << "Total songs: " << songs.size() << endl;
     cout << "Current feature: " << featureName(feature) << endl;
@@ -331,7 +416,7 @@ int main(int argc, char* argv[]) {
                 Feature newFeature = features[selected - 1];
                 if (newFeature != feature) {
                     feature = newFeature;
-                    buildTrees(songs, trees, feature);
+                    buildTrees(songs, trees, buildTimes, feature);
                     cout << "Trees rebuilt for " << featureName(feature) << endl;
                 }
                 else {
@@ -342,7 +427,7 @@ int main(int argc, char* argv[]) {
 
             case 4:
                 cout << "\nCurrent feature: " << featureName(feature) << endl;
-                printStats(trees);
+                printStats(trees, buildTimes);
                 break;
 
             case 5:
