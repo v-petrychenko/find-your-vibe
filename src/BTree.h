@@ -24,16 +24,16 @@ class BTree : public IndexTree {
     size_t nodes = 0;
     Node* makeNode(bool leaf);
     static void destroy(Node* node);
-    void split(Node* parent, int i);
-    void insertWithRoom(Node* node, double key, int songIndex);
+    void splitChild(Node* parent, int i);
+    bool insertOverflow(Node* node, double key, int songIndex);
     static void rangeHelper(const Node* node, double low, double high, vector<int>& result);
     static size_t indexBytes(const Node* node);
     bool validNode(const Node* node, bool isRoot, int depth, int& leafDepth, const double* minKey, const double* maxKey) const;
 public:
     explicit BTree(int minDegree = 32); //Change for different tree depths
     ~BTree() override;
-    BTree(const BTree&);
-    BTree& operator=(const BTree&);
+    BTree(const BTree&) = delete;
+    BTree& operator=(const BTree&) = delete;
     void insert(double key, int songIndex) override;
     vector<int> find(double key) const override;
     vector<int> range(double low, double high) const override;
