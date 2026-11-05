@@ -15,6 +15,30 @@ void BTree::destroy(Node *node) {
     delete node;
 }
 void BTree::splitChild(Node *parent, int i) {
+    Node* full = parent->children[i];
+    Node* right = makeNode(full->leaf);
+    //Split right
+    for (int j = t; j < 2 * t; j++) {
+        right->keys.push_back(full->keys[j]);
+        right->indices.push_back(vector<int>());
+        right->indices.back().swap(full->indices[j]);
+    }
+    if (!full->leaf) {
+        for (int k = t; k <= 2* t; k++) {
+            right->children.push_back(full->children[k]);
+        }
+        full->children.resize(t);
+    }
+    //Move key up
+    double medianKey = full->keys[t - 1];
+    vector<int> medianIndex;
+    medianIndex.swap(full->indices[t - 1]);
+    full->keys.resize(t-1);
+    full->indices.resize(t - 1);
+    parent->keys.insert(parent->keys.begin() + i, medianKey);
+    parent->indices.insert(parent->indices.begin() + i, vector<int>());
+    parent->indices[i].swap(medianIndex);
+    parent->children.insert(parent->children.begin() + i + 1, right);
 
 }
 //Helper to check if node holds too many keys
@@ -48,10 +72,23 @@ void BTree::rangeHelper(const Node *node, double low, double high, vector<int>& 
 }
 
 vector<int> BTree::range(double low, double high) const {
-
+    vector<int> result;
+    if (low > high) return result;
+    rangeHelper(root, low, high, result);
+    return result;
 }
 size_t BTree::indexBytes(const Node *node) {
-
+    if (node == nullptr) return 0;
+    size_t bytes = node->keys.capacity() * sizeof(double);
+    bytes += node->children.capacity() * sizeof(Node*);
+    bytes += node->indices.capacity() * sizeof(vector<int>);
+    for (const vector<int>& list : node->indices) {
+        bytes += list.capacity() * sizeof(int);
+    }
+    for (const Node* child : node->children) {
+        bytes += indexBytes(child);
+    }
+    return bytes;
 }
 
 bool BTree::validNode(const Node *node, bool isRoot, int depth, int &leafDepth, const double *minKey,
@@ -92,11 +129,25 @@ BTree::~BTree() {
 }
 
 void BTree::insert(double key, int songIndex) {
-
+    if (root == nullptr) root = makeNode(true);
+    bool overflow = insertOverflow(root, key, songIndex);
+    if (overflow) {
+        Node* newRoot = makeNode(false);
+        newRoot->children.push_back(root);
+        root = newRoot;
+        splitChild(root, 0);
+    }
 }
 
 vector<int> BTree::find(double key) const {
-
+    const Node* node = root;
+    while (node != nullptr) {
+        int i = lower_bound(node->keys.begin(), node->keys.end(), key) -  node->keys.begin();
+        if (i < static_cast<int>(node->keys.size()) && node->keys[i] == key) return node->indices[i];
+        if (node->leaf) return {};
+        node= node->children[i];
+    }
+    return{};
 }
 
 void BTree::clear() {
@@ -120,7 +171,7 @@ size_t BTree::nodeCount() const {
 }
 
 size_t BTree::memoryBytes() const {
-
+    return nodes * sizeof(Node) + indexBytes(root);
 }
 
 string BTree::name() const {
@@ -128,4 +179,8 @@ string BTree::name() const {
 }
 
 bool BTree::isValid() const {
+    if (root == nullptr) return true;
+    int leafDepth = -1;
+    return validNode(root, true, 1, leafDepth, nullptr, nullptr);
 }
+
