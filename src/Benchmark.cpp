@@ -174,6 +174,28 @@ void runBenchmark(const vector<Song> &songs, Feature feature, bool writeCsv) {
         cout<<static_cast<int>(WIDTHS[w] * 100)<<"% -> "<<truncate(avgMatches[w])<<(w + 1 < WIDTH_COUNT ? ", " : "\n");
     }
     cout<<"("<<RANGE<<" searches per range width)"<<endl;
-
+    //Write to CSV to stockpile data for different search types
+    if (writeCsv) {
+        ofstream csv(SAVE_PATH, ios::app | ios::ate);
+        if (!csv.is_open()) {
+            cout<<"Couldn't write into "<<SAVE_PATH<<endl;
+            return;
+        }
+        if (csv.tellp() == 0) {
+            csv<<"feature,tree,build_us,exact_us";
+            for (int w = 0; w < WIDTH_COUNT; w++) {
+                csv<<",range_"<<static_cast<int>(WIDTHS[w] * 100)<<"%_us";
+            }
+            csv<<",height,nodes"<<endl;
+        }
+        for (auto& r : results) {
+            csv<<searchTitle(feature)<<",\""<<r.name<<"\","<<r.buildUs<<","<<r.exactUs;
+            for (int w = 0; w < WIDTH_COUNT; w++) {
+                csv<<","<<r.rangeUs[w];
+            }
+            csv<<","<<r.height<<","<<r.nodes<<endl;
+        }
+        cout<<"Results added to "<<SAVE_PATH<<endl;
+    }
 }
 
