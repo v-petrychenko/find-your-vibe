@@ -98,8 +98,8 @@ bool BTree::validNode(const Node *node, bool isRoot, int depth, int &leafDepth, 
     if (node->indices.size() != node->keys.size()) return false;
     for (int i = 0; i < n; i++) {
         if (i > 0 && node->keys[i] <= node->keys[i - 1]) return false;
-        if (minKey != nullptr && node->keys[i] <= node->keys[i]) return false;
-        if (maxKey != nullptr && node->keys[i] >= node->keys[i]) return false;
+        if (minKey != nullptr && node->keys[i] <= *minKey) return false;
+        if (maxKey != nullptr && node->keys[i] >= *maxKey) return false;
         if (node->indices[i].empty()) return false;
     }
     if (node->leaf) {
