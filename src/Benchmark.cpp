@@ -87,7 +87,44 @@ void runBenchmark(const vector<Song> &songs, Feature feature, bool writeCsv) {
             ranges[j].push_back(lookUp{low, low + width});
         }
     }
-
+    cout<<"\nBenchmarking "<<searchTitle(feature)<<" on "<< songs.size()<<" songs..."<<endl;
+    vector<Result> results;
+    size_t checksum = 0;
+    size_t totalMatches[WIDTH_COUNT] = {0, 0, 0};
+    //Tree build time
+    for (size_t i = 0; i < trees.size(); i++) {
+        IndexTree* tree = trees[i];
+        Result r;
+        r.name = tree->name();
+        double insertTime = 0.0;
+        for (int j = 0; j < BUILD_RUNS; j++) {
+            tree->clear();
+            auto start = chrono::steady_clock::now();
+            for (size_t s = 0; s < songs.size(); s++) {
+                tree->insert(featureValue(songs[s], feature), static_cast<int>(s));
+            }
+            insertTime += timerUs(start);
+        }
+        r.buildUs = (insertTime / BUILD_RUNS);
+        r.height = tree->height();
+        r.nodes = tree->nodeCount();
+        //Exact search times
+        auto start = chrono::steady_clock::now();
+        for (double key : exactKeys) checksum += tree->find(key).size();
+        r.exactUs = timerUs(start) / exactKeys.size();
+        //Avg search time
+        for (int w = 0; w < WIDTH_COUNT; w++) {
+            start = chrono::steady_clock::now();
+            for (auto& queue : ranges[w]) {
+                size_t found = tree->range(queue.low, queue.high).size();
+                checksum += found;
+                if (i == 0) totalMatches[w] += found;
+            }
+            r.rangeUs[w] = timerUs(start) / ranges[w].size();
+        }
+        results.push_back(r);
+        cout<<" completed "<<r.name<<" benchmark"<<endl;
+    }
 
 
 
