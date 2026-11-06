@@ -58,6 +58,38 @@ double timerUs(chrono::steady_clock::time_point start) {
     return chrono::duration<double, micro>(chrono::steady_clock::now() - start).count();
 }
 void runBenchmark(const vector<Song> &songs, Feature feature, bool writeCsv) {
+    if (songs.empty()) {
+        cout<<"No songs to benchmark."<<endl;
+        return;
+    }
+    RedBlackTree rb;
+    BTree b8(8), b32(32), b64(64);
+    vector<IndexTree*> trees = {&rb, &b8, &b32, &b64};
+    mt19937 rand(42);
+    uniform_int_distribution<size_t> pick(0, songs.size() - 1);
+    double minVal = featureValue(songs[0],feature);
+    double maxVal = minVal;
+    for (const Song& song : songs) {
+        double v = featureValue(song,feature);
+        minVal = min(minVal, v);
+        maxVal = max(maxVal, v);
+    }
+    vector<double> exactKeys;
+    for (int i = 0; i < EXACT_LOOKUPS; i++) {
+        exactKeys.push_back(featureValue(songs[pick(rand)], feature));
+    }
+    vector<vector<lookUp>> ranges(WIDTH_COUNT);
+    for (int j = 0; j < WIDTH_COUNT; j++) {
+        double width = (maxVal - minVal) * WIDTHS[j];
+        uniform_real_distribution<double> startDist(minVal, maxVal - width);
+        for (int k = 0; k < RANGE; k++) {
+            double low = startDist(rand);
+            ranges[j].push_back(lookUp{low, low + width});
+        }
+    }
+
+
+
 
 }
 
