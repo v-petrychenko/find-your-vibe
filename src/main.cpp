@@ -393,11 +393,11 @@ int main(int argc, char* argv[]) {
                 break;
             case 3: {
                 cout << "\nSelect feature:\n";
-                cout << "1. Tempo\n";
-                cout << "2. Energy\n";
-                cout << "3. Danceability\n";
-                cout << "4. Valence\n";
-                cout << "5. Popularity\n";
+                cout << "1. Tempo (0 - 243.372)\n";
+                cout << "2. Energy (0.0 - 1.0)\n";
+                cout << "3. Danceability (0.0 - 1.0)\n";
+                cout << "4. Valence (0.0 - 1.0)\n";
+                cout << "5. Popularity (0 - 100)\n";
                 cout << "0. Back\n";
 
                 int selected = readChoice(5);
