@@ -125,8 +125,55 @@ void runBenchmark(const vector<Song> &songs, Feature feature, bool writeCsv) {
         results.push_back(r);
         cout<<" completed "<<r.name<<" benchmark"<<endl;
     }
-
-
+    //Avg matches per range
+    double avgMatches[WIDTH_COUNT];
+    for (int w = 0; w < WIDTH_COUNT; w++) {
+        avgMatches[w] = static_cast<double>(totalMatches[w]) / RANGE;
+    }
+    //Printing in format
+    const size_t labelWidth = 26;
+    const size_t colWidth = 17;
+    string line(labelWidth + colWidth * results.size(), '-');
+    cout<<"\n"<<string(labelWidth + colWidth * results.size(), '=')<<endl;
+    cout<<"BENCHMARK: "<<searchTitle(feature)<<" ("<<to_string(songs.size())<<" songs)"<<endl;
+    cout<<string(labelWidth + colWidth * results.size(), '=')<<endl;
+    cout<<align("", labelWidth, true);
+    for (const Result& r : results) {
+        cout<<align(r.name, colWidth, false);
+    }
+    cout<<"\n"<<line<<endl;
+    auto printRow = [&](const string& label, const vector<string>& values) {
+        cout<<align(label, labelWidth, true);
+        for (const string& value : values) {
+            cout<<align(value, colWidth, false);
+        }
+        cout<<endl;
+    };
+    vector<string> values;
+    values.clear();
+    for (const Result& r : results) values.push_back(truncate(r.buildUs));
+    printRow("Build time (us)", values);
+    values.clear();
+    for (const Result& r : results) values.push_back(truncate(r.exactUs));
+    printRow("Exact search (us/search)", values);
+    for (int w = 0; w < WIDTH_COUNT; w++) {
+        values.clear();
+        for (const Result& r : results) values.push_back(truncate(r.rangeUs[w]));
+        printRow("Range " + to_string(static_cast<int>(WIDTHS[w] * 100)) + "% (us/search)", values);
+    }
+    cout<<line<<endl;
+    values.clear();
+    for (const Result& r : results) values.push_back(to_string(r.height));
+    printRow("Height", values);
+    values.clear();
+    for (const Result& r : results) values.push_back(to_string(r.nodes));
+    printRow("Nodes", values);
+    cout<<line<<endl;
+    cout<<"\nAverage matches per range search: ";
+    for (int w = 0; w < WIDTH_COUNT; w++) {
+        cout<<static_cast<int>(WIDTHS[w] * 100)<<"% -> "<<truncate(avgMatches[w])<<(w + 1 < WIDTH_COUNT ? ", " : "\n");
+    }
+    cout<<"("<<RANGE<<" searches per range width)"<<endl;
 
 }
 
