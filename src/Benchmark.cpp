@@ -7,10 +7,8 @@
 #include <iostream>
 #include <random>
 #include <sstream>
-
 #include "RedBlackTree.h"
 using namespace std;
-
 namespace {
     const int BUILD_RUNS = 3;
     const int EXACT_LOOKUPS = 2000;

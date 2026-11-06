@@ -8,11 +8,12 @@
 #include <cctype>
 #include <random>
 #include <utility>
-
 #include "CsvLoader.h"
 #include "RedBlackTree.h"
 #include "IndexTree.h"
 #include "Song.h"
+#include "BTree.h"
+#include "Benchmark.h"
 
 
 using namespace std;
@@ -345,8 +346,9 @@ static void verifyTrees(const vector<Song>& songs, const vector<IndexTree*>& tre
 int main(int argc, char* argv[]) {
     string dataPath = argc > 1 ? argv[1] : "data/dataset.csv";
     vector<Song> songs;
+    BTree bTree8(8), bTree32(32), bTree64(64);
     RedBlackTree rbTree;
-    vector<IndexTree*> trees = {&rbTree};
+    vector<IndexTree*> trees = {&rbTree, &bTree8, &bTree32, &bTree64};
     vector<double> buildTimes;
     Feature feature = Feature::Tempo;
 
@@ -433,7 +435,9 @@ int main(int argc, char* argv[]) {
             case 5:
                 verifyTrees(songs, trees, rbTree, feature);
                 break;
-
+            case 6:
+                runBenchmark(songs, feature);
+                break;
             default:
                 cout << "Not implemented yet.\n";
                 break;
